@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ARC - Android Remote Control</title>
+<style>
+/*! normalize.css v3.0.2 | MIT License | git.io/normalize */
+html {
+font-family: sans-serif;
+-webkit-text-size-adjust: 100%;
+-ms-text-size-adjust: 100%;
+}
+body {
+margin: 0;
+}
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+main,
+menu,
+nav,
+section,
+summary {
+display: block;
+}
+audio,
+canvas,
+progress,
+video {
+display: inline-block;
+vertical-align: baseline;
+}
+audio:not([controls]) {
+display: none;
+height: 0;
+}
+[hidden],
+template {
+display: none;
+}
+/* --- */
+
+* {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+*:before,
+*:after {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+html {
+font-size: 10px;
+
+-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+body {
+font-family: "Tahoma", Arial, sans-serif;
+font-size: 14px;
+line-height: 1.42857143;
+color: #555;
+background-color: #fff;
+}
+
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+font-family: inherit;
+font-weight: 500;
+line-height: 1.1;
+color: inherit;
+}
+
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3 {
+margin-top: 20px;
+margin-bottom: 10px;
+}
+
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
+margin-top: 10px;
+margin-bottom: 10px;
+}
+
+h1,
+.h1 {
+font-size: 36px;
+}
+h2,
+.h2 {
+font-size: 30px;
+}
+h3,
+.h3 {
+font-size: 24px;
+}
+h4,
+.h4 {
+font-size: 18px;
+}
+h5,
+.h5 {
+font-size: 14px;
+}
+h6,
+.h6 {
+font-size: 12px;
+}
+
+p {
+margin: 0 0 10px;
+}
+
+.container {
+padding-right: 15px;
+padding-left: 15px;
+margin-right: auto;
+margin-left: auto;
+}
+@media (min-width: 768px) {
+.container {
+width: 750px;
+}
+}
+@media (min-width: 992px) {
+.container {
+width: 970px;
+}
+}
+@media (min-width: 1200px) {
+.container {
+width: 1170px;
+}
+}
+
+header {
+position: relative;
+padding: 30px 0;
+color: #d4e3ef;
+text-align: left;
+text-shadow: 0 1px 0 rgba(0,0,0,.1);
+background-color: #6389a8;
+background-image: -webkit-gradient(linear,left top,left bottom,from(#49708f),to(#6389a8));
+background-image: -webkit-linear-gradient(top,#49708f 0,#6389a8 100%);
+background-image: -o-linear-gradient(top,#49708f 0,#6389a8 100%);
+background-image: linear-gradient(to bottom,#49708f 0,#6389a8 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#49708f', endColorstr='#6F5499',
+GradientType=0);
+background-repeat: repeat-x;
+font-size: 24px;
+font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
+header h1 {
+
+font-size: 60px;
+line-height: 1;
+margin-top: 0;
+margin-bottom: 0;
+color: #fff;
+}
+
+header p {
+margin-bottom: 0;
+font-weight: 300;
+line-height: 1.4;
+}
+
+h2 {
+font-size: 19px;
+line-height: 25px;
+font-family: 'WOL_SB','Segoe UI Semibold','Segoe UI',Tahoma,Helvetica,sans-serif;
+font-weight: 600;
+margin-bottom: 10px;
+}
+
+.para {
+font-size: 13px;
+line-height: 20px;
+color: #505050;
+margin-bottom: 15px;
+}
+
+table {
+background-color: transparent;
+}
+
+th {
+text-align: left;
+}
+.table {
+width: 100%;
+max-width: 100%;
+margin-bottom: 20px;
+border-collapse: collapse;
+}
+.table > thead > tr > th,
+.table > tbody > tr > th,
+.table > tfoot > tr > th,
+.table > thead > tr > td,
+.table > tbody > tr > td,
+.table > tfoot > tr > td {
+padding: 8px;
+line-height: 1.42857143;
+vertical-align: top;
+border-top: 1px solid #ddd;
+}
+.table > thead > tr > th {
+vertical-align: bottom;
+border-bottom: 2px solid #ddd;
+}
+
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <h1>ARC</h1>
+
+        <p>Android Remote Control</p>
+    </div>
+</header>
+<div class="container">
+    <h2>Перемещение автомобиля с помощью клавиатуры</h2>
+
+    <p class="para">После включения функции управления на мобильном устройстве можно перемещать
+        автомобиль, используя клавиатуру.</p>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Перемещение автомобиля</th>
+            <th>Сочетание клавиш</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Вверх и влево</td>
+            <td>w + a</td>
+        </tr>
+        <tr>
+            <td>Вверх</td>
+            <td>w</td>
+        </tr>
+        <tr>
+            <td>Вверх и вправо</td>
+            <td>w + d</td>
+        </tr>
+        <tr>
+            <td>Влево</td>
+            <td>a</td>
+        </tr>
+        <tr>
+            <td>Вправо</td>
+            <td>d</td>
+        </tr>
+        <tr>
+            <td>Вниз и влево</td>
+            <td>s + a</td>
+        </tr>
+        <tr>
+            <td>Вниз</td>
+            <td>s</td>
+        </tr>
+        <tr>
+            <td>Вниз и вправо</td>
+            <td>s + d</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+
+function getXmlHttp(){
+  var xmlhttp;
+  try {
+    xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+  } catch (e) {
+    try {
+      xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+    } catch (E) {
+      xmlhttp = false;
+    }
+  }
+  if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
+    xmlhttp = new XMLHttpRequest();
+  }
+  return xmlhttp;
+}
+
+var keys = {87:"up",65:"left",83:"down",68:"right"},
+req = getXmlHttp();
+
+function sendCommand(command) {
+	req.open('POST', '/command/'+command, true);
+	req.send();
+}
+
+
+function keypress(e) {
+	if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+	var find = false;
+	for (var k in keys) {
+		if(k == e.keyCode) {
+			find = true;
+			break;
+		}
+	}
+
+	if(!find) return;
+
+	sendCommand(keys[e.keyCode]);
+}
+
+document.addEventListener("keydown", keypress);
+//document.addEventListener("keyup", keypress);
+
+
+</script>
+</body>
+</html>
