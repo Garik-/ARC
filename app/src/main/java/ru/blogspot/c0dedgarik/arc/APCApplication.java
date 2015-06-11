@@ -22,6 +22,9 @@ public class APCApplication extends android.app.Application {
 
         mHttpServer.addCommand("up", R.raw.up);
         mHttpServer.addCommand("down", R.raw.down);
+        mHttpServer.addCommand("left", R.raw.left);
+        mHttpServer.addCommand("right", R.raw.right);
+        mHttpServer.addCommand("downleft", R.raw.downleft);
 
         mToast = new CustomToast();
 

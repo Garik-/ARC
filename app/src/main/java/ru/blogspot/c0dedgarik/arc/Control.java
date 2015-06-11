@@ -280,7 +280,7 @@ public class Control {
         }
 
         public int getCountFrames() {
-            return (pcmdata.length - 44) / getBlockAlign(); // countFrames = subchunk2Size / blockAlign;
+            return (pcmdata.length - 44) / getBlockAlign(); // countFrames = fileSize / blockAlign;
         }
 
         public byte[] toByteArray() {

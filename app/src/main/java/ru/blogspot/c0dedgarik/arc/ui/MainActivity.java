@@ -71,7 +71,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             tv.setText(ip);
 
             mBtnPower = (ToggleButton) findViewById(R.id.btnPower);
+            mBtnPower.setChecked(mHttpServer.wasStarted());
             mBtnPower.setOnClickListener(this);
+
         }
 
 
