@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">ARC</string>
-
-    <string name="up">UP</string>
+    <string name="network_error">network connection problems</string>
     <string name="action_settings">Settings</string>
 </resources>

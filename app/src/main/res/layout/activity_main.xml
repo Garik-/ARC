@@ -2,9 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="fill_parent"
     android:layout_width="fill_parent"
-
     android:background="@drawable/background">
-
 
     <LinearLayout
         android:orientation="vertical"
@@ -19,33 +17,16 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="#888"
-            android:text="network connection problems"
+            android:text="@string/network_error"
             android:id="@+id/tvStatus"
             android:layout_gravity="center_horizontal" />
 
-        <FrameLayout
+        <ToggleButton
             android:layout_width="125dp"
             android:layout_height="125dp"
+            android:layout_gravity="center_horizontal"
+            android:checked="false"
             android:layout_margin="10dp"
-            android:layout_gravity="center_horizontal">
-
-            <ImageView
-                android:src="@drawable/round"
-                android:scaleType="fitCenter"
-                android:layout_height="fill_parent"
-                android:layout_width="fill_parent" />
-
-            <ImageButton
-                android:id="@+id/btnPower"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/ic_power_settings_new_white_48dp"
-                android:background="@null"
-                android:layout_gravity="center_horizontal"></ImageButton>
-        </FrameLayout>
-
-
+            android:id="@+id/btnPower" />
     </LinearLayout>
-
-
 </RelativeLayout>

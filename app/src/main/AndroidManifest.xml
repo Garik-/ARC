@@ -11,6 +11,9 @@
         android:theme="@style/AppTheme"
         android:name=".APCApplication">
 
+        <activity
+            android:name=".ui.PrefActivity"
+            android:label="@string/action_settings"></activity>
 
         <activity
             android:name=".ui.MainActivity"
@@ -18,7 +21,6 @@
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/toggle_on" />
+            <stroke
+                android:width="@dimen/toggle_border_width"
+                android:color="@color/toggle_border" />
+        </shape>
+    </item>
+    <item>
+        <bitmap
+            android:src="@mipmap/ic_power_settings_new_white_48dp"
+            android:gravity="center" />
+    </item>
+</layer-list>

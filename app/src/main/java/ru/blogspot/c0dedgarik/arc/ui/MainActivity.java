@@ -1,13 +1,14 @@
 package ru.blogspot.c0dedgarik.arc.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
     private APCApplication mApplication;
     private HttpServer mHttpServer;
+    private ToggleButton mBtnPower;
 
 
     @Override
@@ -32,6 +34,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         int id = v.getId();
         switch (id) {
             case R.id.btnPower: {
+
                 if (false == mHttpServer.wasStarted()) {
                     try {
                         mHttpServer.start();
@@ -44,6 +47,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                     mHttpServer.stop();
                     mApplication.toast("Web server is stopped", Toast.LENGTH_LONG);
                 }
+
+                mBtnPower.setChecked(mHttpServer.wasStarted());
             }
         }
     }
@@ -65,9 +70,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             TextView tv = (TextView) findViewById(R.id.tvStatus);
             tv.setText(ip);
 
-            ImageButton btn = (ImageButton) findViewById(R.id.btnPower);
-            btn.setOnClickListener(this);
-
+            mBtnPower = (ToggleButton) findViewById(R.id.btnPower);
+            mBtnPower.setOnClickListener(this);
         }
 
 
@@ -109,14 +113,16 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                Intent intent = new Intent(this, PrefActivity.class);
+                startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
 
-        return super.onOptionsItemSelected(item);
     }
 
 

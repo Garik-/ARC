@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <solid android:color="@color/toast_bg" />
+
+    <padding
+        android:left="1dp"
+        android:top="1dp"
+        android:right="1dp"
+        android:bottom="1dp" />
+
+    <corners
+        android:bottomRightRadius="@dimen/toast_border_radius"
+        android:bottomLeftRadius="@dimen/toast_border_radius"
+        android:topLeftRadius="@dimen/toast_border_radius"
+        android:topRightRadius="@dimen/toast_border_radius" />
+</shape>

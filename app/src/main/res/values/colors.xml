@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="white" type="color">#ffffffff</item>
+    <item name="toggle_border" type="color">#b5c1ce</item>
+    <item name="toggle_on" type="color">#49708f</item>
+    <item name="toggle_off" type="color">#2ca5e0</item>
+    <item name="toast_bg" type="color">#96949ea8</item>
 </resources>
