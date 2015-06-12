@@ -5,21 +5,29 @@ import android.content.res.Resources;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.os.Handler;
 import android.util.LruCache;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 
 
-public class Control {
+public class Control implements Runnable {
 
 
     private Context mContext;
     private AudioTrack mAudioTrack;
     private LruCache<Integer, byte[]> mSamples;
     private int mLastCommand;
+    private int mCommand;
+    private Handler mHandler = new Handler();
+    private HashMap<String, Integer> mCommands = new HashMap<String, Integer>();
+
+    // костыли... разные семплы требуют разного лупа...
+    private HashMap<Integer, Integer> mCountFrames = new HashMap<>();
 
 
     public Control(Context context) {
@@ -36,6 +44,21 @@ public class Control {
                 return buf.length / 1024;
             }
         };
+
+    }
+
+    public void addCommand(String name, int resId, int countFrames) {
+        mCommands.put(name, resId);
+        mCountFrames.put(resId, countFrames);
+    }
+
+    public void command(final String name) {
+
+
+        Integer cmd = mCommands.get(name);
+        if (null != cmd) {
+            command(cmd.intValue());
+        }
     }
 
     public void command(final int command) {
@@ -61,9 +84,9 @@ public class Control {
             //LoadTask lt = new LoadTask();
             //lt.execute(command);
 
-            execute(command);
+            mCommand = command;
+            mHandler.post(this);
         }
-
     }
 
     private byte[] getTrack(final int resId) throws IOException {
@@ -131,9 +154,10 @@ public class Control {
         return audioTrack;
     }
 
-    private void execute(int command) {
+    @Override
+    public void run() {
         try {
-            WAV sample = new WAV(getTrack(command));
+            WAV sample = new WAV(getTrack(mCommand));
             AudioTrack audioTrack = createAudioTrack(sample);
 
             if (null == audioTrack) {
@@ -142,7 +166,7 @@ public class Control {
             }
 
             mAudioTrack = audioTrack;
-            mLastCommand = command;
+            mLastCommand = mCommand;
 
             mAudioTrack.play();
 
@@ -280,7 +304,15 @@ public class Control {
         }
 
         public int getCountFrames() {
-            return (pcmdata.length - 44) / getBlockAlign(); // countFrames = fileSize / blockAlign;
+            ARCLog.d("command: %d, countFrames: %d", mCommand, mCountFrames.get(mCommand));
+
+
+            int count = (pcmdata.length - mCountFrames.get(mCommand)) / getBlockAlign();
+
+            //int c = mCountFrames.get(mCommand);
+            //mCountFrames.put(mCommand,c+1);
+
+            return count;  // countFrames = fileSize / blockAlign;
         }
 
         public byte[] toByteArray() {

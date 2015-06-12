@@ -13,7 +13,6 @@ import java.net.SocketException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
@@ -23,23 +22,23 @@ import java.util.regex.Pattern;
 import fi.iki.elonen.NanoHTTPD;
 
 
-public class HttpServer extends NanoHTTPD {
+public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
 
     private Context mContext;
-    private Control mControl;
+
     private String lastUpdateTime = null;
     private VideoStream mVideoStream;
+    private WebSocketServer mWebSocketServer;
 
     @Override
     public void stop() {
         mVideoStream.stop();
+        mWebSocketServer.stop();
         super.stop();
     }
 
 
-    private HashMap<String, Integer> mCommands;
-
-    final private Pattern commandPattern;
+    //final private Pattern commandPattern;
     final private Pattern ipPattern;
 
     private static SimpleDateFormat GMT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
@@ -48,26 +47,23 @@ public class HttpServer extends NanoHTTPD {
         GMT.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
-    public void setVideoStream(VideoStream stream) {
-        mVideoStream = stream;
-    }
 
     public HttpServer(final int port) {
         super(port);
 
-        commandPattern = Pattern.compile("^\\/command\\/([a-z]*)$");
+        //commandPattern = Pattern.compile("^\\/command\\/([a-z]*)$");
         ipPattern = Pattern.compile("(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])", Pattern.CASE_INSENSITIVE);
-        mCommands = new HashMap<String, Integer>();
+
+        mWebSocketServer = new WebSocketServer(9090);
     }
 
     public void setContext(Context context) {
         mContext = context;
-        mControl = new Control(context);
+        mVideoStream = ((ARCApplication) mContext.getApplicationContext()).getVideoStream();
+
+        mWebSocketServer.setContext(context);
     }
 
-    public void addCommand(String name, int resId) {
-        mCommands.put(name, resId);
-    }
 
     private static long GTM2Milliseconds(final String date) {
         long mills = 0;
@@ -138,7 +134,7 @@ public class HttpServer extends NanoHTTPD {
         return response;
     }
 
-    private Response executeCommand(String command) {
+    /*private Response executeCommand(String command) {
 
         Integer resId = mCommands.get(command);
         if (null == resId) {
@@ -149,7 +145,7 @@ public class HttpServer extends NanoHTTPD {
         // возможно стоит запускать отдельный тред... хз...
         mControl.command(resId.intValue());
         return newFixedLengthResponse(Response.Status.OK, NanoHTTPD.MIME_PLAINTEXT, null);
-    }
+    }*/
 
     @Override
     public void start() throws IOException {
@@ -158,6 +154,8 @@ public class HttpServer extends NanoHTTPD {
             //mVideoStream.startPreview();
             mVideoStream.start();
         }
+
+        mWebSocketServer.start(30000); // timeout = 30 sec !!
 
         super.start();
     }
@@ -180,26 +178,25 @@ public class HttpServer extends NanoHTTPD {
 
         ARCLog.d(method + " '" + uri + "' ");
 
-        if (!(Method.GET.equals(method) || Method.POST.equals(method))) {
+        if (!(Method.GET.equals(method))) {
             return newFixedLengthResponse(Response.Status.NOT_IMPLEMENTED, NanoHTTPD.MIME_PLAINTEXT, "Not Implemented");
         }
 
-        if (Method.GET.equals(method) && uri.equals("/")) {
+        if (uri.equals("/")) {
             return indexResponse(session);
         }
 
-        if (Method.GET.equals(method) && uri.equals("/stream")) {
-            videoStream(session); // возможно надо в отдельном потоке
-            return null;
+        if (uri.equals("/stream")) {
+            return videoStream(session);
         }
 
-        if (Method.POST.equals(method)) {
+        /*if (Method.POST.equals(method)) {
 
             Matcher m = commandPattern.matcher(uri);
             if (m.matches()) {
                 return executeCommand(m.group(1));
             }
-        }
+        }*/
 
         return newFixedLengthResponse(Response.Status.NOT_FOUND, NanoHTTPD.MIME_PLAINTEXT, "Not Found");
     }

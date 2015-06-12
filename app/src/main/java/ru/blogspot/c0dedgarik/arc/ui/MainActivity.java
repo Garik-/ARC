@@ -13,7 +13,7 @@ import android.widget.ToggleButton;
 
 import java.io.IOException;
 
-import ru.blogspot.c0dedgarik.arc.APCApplication;
+import ru.blogspot.c0dedgarik.arc.ARCApplication;
 import ru.blogspot.c0dedgarik.arc.ARCLog;
 import ru.blogspot.c0dedgarik.arc.HttpServer;
 import ru.blogspot.c0dedgarik.arc.R;
@@ -22,7 +22,7 @@ import ru.blogspot.c0dedgarik.arc.VideoStream;
 
 public class MainActivity extends ActionBarActivity implements View.OnClickListener {
 
-    private APCApplication mApplication;
+    private ARCApplication mApplication;
     private HttpServer mHttpServer;
     private VideoStream mVideoStream;
 
@@ -68,7 +68,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mApplication = (APCApplication) getApplication();
+        mApplication = (ARCApplication) getApplication();
 
 
         mHttpServer = mApplication.getHttpServer();

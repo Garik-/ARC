@@ -7,30 +7,39 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class APCApplication extends android.app.Application {
-    private static APCApplication sApplication;
+public class ARCApplication extends android.app.Application {
+    private static ARCApplication sApplication;
 
     private HttpServer mHttpServer;
     private VideoStream mVideoStream;
     private CustomToast mToast;
+    private Control mControl;
+
+
+    public interface DI {
+        public void setContext(Context context);
+    }
 
     @Override
     public void onCreate() {
 
 
+        mVideoStream = new VideoStream();
+
+        mControl = new Control(this);
+
+        // значения циклов повторения подобраны эксперементально... надо бы вынести настроки в настройки
+        mControl.addCommand("up", R.raw.up, 44);
+        mControl.addCommand("down", R.raw.down, 10);
+        mControl.addCommand("left", R.raw.left, 0);
+        mControl.addCommand("right", R.raw.right, 48);
+        mControl.addCommand("downleft", R.raw.downleft, 20); // 18
+
         mHttpServer = new HttpServer(8080);
         mHttpServer.setContext(this);
 
-        mHttpServer.addCommand("up", R.raw.up);
-        mHttpServer.addCommand("down", R.raw.down);
-        mHttpServer.addCommand("left", R.raw.left);
-        mHttpServer.addCommand("right", R.raw.right);
-        mHttpServer.addCommand("downleft", R.raw.downleft);
-
         mToast = new CustomToast();
 
-        mVideoStream = new VideoStream();
-        mHttpServer.setVideoStream(mVideoStream);
 
         super.onCreate();
     }
@@ -38,11 +47,6 @@ public class APCApplication extends android.app.Application {
     public void toast(String text, int duration) {
         mToast.show(text, duration);
     }
-
-    public VideoStream getVideoStream() {
-        return mVideoStream;
-    }
-
 
     private class CustomToast {
         private Toast mToast;
@@ -66,12 +70,18 @@ public class APCApplication extends android.app.Application {
         }
     }
 
-    public static APCApplication getInstance() {
+    public static ARCApplication getInstance() {
         return sApplication;
     }
-
-
     public HttpServer getHttpServer() {
         return mHttpServer;
+    }
+
+    public Control getControl() {
+        return mControl;
+    }
+
+    public VideoStream getVideoStream() {
+        return mVideoStream;
     }
 }
