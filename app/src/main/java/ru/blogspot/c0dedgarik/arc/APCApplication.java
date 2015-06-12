@@ -11,6 +11,7 @@ public class APCApplication extends android.app.Application {
     private static APCApplication sApplication;
 
     private HttpServer mHttpServer;
+    private VideoStream mVideoStream;
     private CustomToast mToast;
 
     @Override
@@ -28,11 +29,18 @@ public class APCApplication extends android.app.Application {
 
         mToast = new CustomToast();
 
+        mVideoStream = new VideoStream();
+        mHttpServer.setVideoStream(mVideoStream);
+
         super.onCreate();
     }
 
     public void toast(String text, int duration) {
         mToast.show(text, duration);
+    }
+
+    public VideoStream getVideoStream() {
+        return mVideoStream;
     }
 
 

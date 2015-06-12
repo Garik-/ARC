@@ -1,7 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <EditTextPreference
-        android:key="port"
-        android:summary="HTTP server port"
-        android:title="Port"></EditTextPreference>
+    <PreferenceCategory android:title="НАСТРОЙКИ ARC">
+        <PreferenceScreen
+            android:key="video_settings"
+            android:title="Настройки видео"
+            android:summary="Разрешение, фокус, другие настройки видео">
+
+
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:key="power_settings"
+            android:title="Управление питанием"
+            android:summary="Выключать экран или камеру, когда не используется"></PreferenceScreen>
+
+    </PreferenceCategory>
+    <PreferenceCategory android:title="НАСТРОЙКИ СОЕДИНЕНИЯ">
+        <PreferenceScreen
+            android:key="network_settings"
+            android:title="Вещание в локальной сети"
+            android:summary="Порт 8080, логин/пароль: не установлены">
+
+            <EditTextPreference
+                android:key="port"
+                android:summary="8080"
+                android:title="Порт"></EditTextPreference>
+        </PreferenceScreen>
+    </PreferenceCategory>
+
 </PreferenceScreen>

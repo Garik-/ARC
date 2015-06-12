@@ -176,6 +176,7 @@ public abstract class NanoHTTPD {
 
         @Override
         public void run() {
+
             OutputStream outputStream = null;
             try {
                 outputStream = this.acceptSocket.getOutputStream();
@@ -184,6 +185,7 @@ public abstract class NanoHTTPD {
                 while (!this.acceptSocket.isClosed()) {
                     session.execute();
                 }
+
             } catch (Exception e) {
                 // When the socket is closed by the client,
                 // we throw our own SocketException
@@ -470,6 +472,8 @@ public abstract class NanoHTTPD {
 
         public static final int BUFSIZE = 8192;
 
+        private boolean capture = false;
+
         private final TempFileManager tempFileManager;
 
         private final OutputStream outputStream;
@@ -678,8 +682,13 @@ public abstract class NanoHTTPD {
             }
         }
 
+
         @Override
         public void execute() throws IOException {
+
+
+            if (capture) return; // TODO Gar|k
+
             try {
                 // Read the first 8192 bytes.
                 // The full header should fit in here.
@@ -749,9 +758,13 @@ public abstract class NanoHTTPD {
                 boolean keepAlive = protocolVersion.equals("HTTP/1.1") && (connection == null || !connection.matches("(?i).*close.*"));
 
                 // Ok, now do the serve()
+
                 Response r = serve(this);
                 if (r == null) {
-                    throw new ResponseException(Response.Status.INTERNAL_ERROR, "SERVER INTERNAL ERROR: Serve() returned a null response.");
+                    capture = true;
+                    return;
+                    // TODO: Gar|k :(
+                    //throw new ResponseException(Response.Status.INTERNAL_ERROR, "SERVER INTERNAL ERROR: Serve() returned a null response.");
                 } else {
                     String acceptEncoding = this.headers.get("accept-encoding");
                     this.cookies.unloadQueue(r);
@@ -761,6 +774,7 @@ public abstract class NanoHTTPD {
                     r.send(this.outputStream);
                 }
                 if (!keepAlive || "close".equalsIgnoreCase(r.getHeader("connection"))) {
+
                     throw new SocketException("NanoHttpd Shutdown");
                 }
             } catch (SocketException e) {
@@ -858,6 +872,11 @@ public abstract class NanoHTTPD {
         @Override
         public final InputStream getInputStream() {
             return this.inputStream;
+        }
+
+        @Override
+        public final OutputStream getOutputStream() {
+            return this.outputStream;
         }
 
         @Override
@@ -1024,6 +1043,8 @@ public abstract class NanoHTTPD {
         Map<String, String> getHeaders();
 
         InputStream getInputStream();
+
+        OutputStream getOutputStream();
 
         Method getMethod();
 

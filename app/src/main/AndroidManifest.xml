@@ -3,6 +3,7 @@
     package="ru.blogspot.c0dedgarik.arc">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"

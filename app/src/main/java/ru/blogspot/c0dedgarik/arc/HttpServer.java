@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -27,10 +28,19 @@ public class HttpServer extends NanoHTTPD {
     private Context mContext;
     private Control mControl;
     private String lastUpdateTime = null;
+    private VideoStream mVideoStream;
+
+    @Override
+    public void stop() {
+        mVideoStream.stop();
+        super.stop();
+    }
+
 
     private HashMap<String, Integer> mCommands;
 
     final private Pattern commandPattern;
+    final private Pattern ipPattern;
 
     private static SimpleDateFormat GMT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
 
@@ -38,11 +48,15 @@ public class HttpServer extends NanoHTTPD {
         GMT.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
+    public void setVideoStream(VideoStream stream) {
+        mVideoStream = stream;
+    }
 
     public HttpServer(final int port) {
         super(port);
 
         commandPattern = Pattern.compile("^\\/command\\/([a-z]*)$");
+        ipPattern = Pattern.compile("(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])", Pattern.CASE_INSENSITIVE);
         mCommands = new HashMap<String, Integer>();
     }
 
@@ -137,6 +151,27 @@ public class HttpServer extends NanoHTTPD {
         return newFixedLengthResponse(Response.Status.OK, NanoHTTPD.MIME_PLAINTEXT, null);
     }
 
+    @Override
+    public void start() throws IOException {
+
+        if (null != mVideoStream) {
+            //mVideoStream.startPreview();
+            mVideoStream.start();
+        }
+
+        super.start();
+    }
+
+    private Response videoStream(IHTTPSession session) {
+        try {
+            mVideoStream.setSocketOutput(session.getOutputStream());
+            return null;
+        } catch (Exception e) {
+            ARCLog.e(e.getMessage());
+            return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, NanoHTTPD.MIME_PLAINTEXT, "Internal Server Error");
+        }
+    }
+
 
     @Override
     public Response serve(IHTTPSession session) {
@@ -153,6 +188,11 @@ public class HttpServer extends NanoHTTPD {
             return indexResponse(session);
         }
 
+        if (Method.GET.equals(method) && uri.equals("/stream")) {
+            videoStream(session); // возможно надо в отдельном потоке
+            return null;
+        }
+
         if (Method.POST.equals(method)) {
 
             Matcher m = commandPattern.matcher(uri);
@@ -165,10 +205,7 @@ public class HttpServer extends NanoHTTPD {
     }
 
     public boolean isIpv4Address(String ipAddress) {
-        final String ipv4Pattern = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
-        final Pattern pattern = Pattern.compile(ipv4Pattern, Pattern.CASE_INSENSITIVE);
-
-        Matcher m1 = pattern.matcher(ipAddress);
+        Matcher m1 = ipPattern.matcher(ipAddress);
         return m1.matches();
     }
 
