@@ -61,6 +61,12 @@ public class Control implements Runnable {
         }
     }
 
+    public void stop() {
+        if (null != mAudioTrack) {
+            mAudioTrack.stop();
+        }
+    }
+
     public void command(final int command) {
 
         if (null != mAudioTrack) {
@@ -85,7 +91,10 @@ public class Control implements Runnable {
             //lt.execute(command);
 
             mCommand = command;
-            mHandler.post(this);
+            mHandler.post(this); // in thread
+            // ^ если делать в потоке, то при коротких нажатиях на клаву команды не успевают загрузится
+            // и начинается гонка потоков в итоге команда уже не должна звучать а она продолжает
+
         }
     }
 

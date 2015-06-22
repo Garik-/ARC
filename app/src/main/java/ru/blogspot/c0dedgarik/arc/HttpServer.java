@@ -186,6 +186,11 @@ public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
             return indexResponse(session);
         }
 
+        if (uri.equals("/ws")) {
+            return newFixedLengthResponse(Response.Status.OK, NanoHTTPD.MIME_PLAINTEXT, "9090"); // port ws
+        }
+
+
         if (uri.equals("/stream")) {
             return videoStream(session);
         }

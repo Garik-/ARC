@@ -45,6 +45,12 @@ public class WebSocketServer extends NanoWebSocketServer implements ARCApplicati
     }*/
 
     @Override
+    public void stop() {
+        if (null != mControl) mControl.stop(); // stop sound
+        super.stop();
+    }
+
+    @Override
     protected void onMessage(WebSocket socket, WebSocketFrame messageFrame) {
 
 

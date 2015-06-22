@@ -2,12 +2,17 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="НАСТРОЙКИ ARC">
         <PreferenceScreen
+            android:key="sample_settings"
+            android:title="Управляющие команды"
+            android:summary="Уровень громкости, частота сигнала"></PreferenceScreen>
+        <PreferenceScreen
             android:key="video_settings"
             android:title="Настройки видео"
             android:summary="Разрешение, фокус, другие настройки видео">
 
 
         </PreferenceScreen>
+
         <PreferenceScreen
             android:key="power_settings"
             android:title="Управление питанием"
@@ -23,7 +28,11 @@
             <EditTextPreference
                 android:key="port"
                 android:summary="8080"
-                android:title="Порт"></EditTextPreference>
+                android:title="Порт веб-сервера"></EditTextPreference>
+            <EditTextPreference
+                android:key="websocket_port"
+                android:summary="9090"
+                android:title="Порт сервера команд"></EditTextPreference>
         </PreferenceScreen>
     </PreferenceCategory>
 
