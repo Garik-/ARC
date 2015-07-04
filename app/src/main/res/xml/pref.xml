@@ -4,7 +4,16 @@
         <PreferenceScreen
             android:key="sample_settings"
             android:title="Управляющие команды"
-            android:summary="Уровень громкости, частота сигнала"></PreferenceScreen>
+            android:summary="Частота сигнала">
+
+
+            <ru.blogspot.c0dedgarik.arc.ui.SamplePreference
+                android:key="sample_up"
+                android:title="Вверх"
+                android:summary="30" />
+
+
+        </PreferenceScreen>
         <PreferenceScreen
             android:key="video_settings"
             android:title="Настройки видео"

@@ -47,9 +47,13 @@ public class Control implements Runnable {
 
     }
 
-    public void addCommand(String name, int resId, int countFrames) {
-        mCommands.put(name, resId);
-        mCountFrames.put(resId, countFrames);
+    //public void addCommand(String name, int resId, int countFrames) {
+    //    mCommands.put(name, resId);
+    //    mCountFrames.put(resId, countFrames);
+    //}
+
+    public void addCommand(String name, int count) {
+        mCommands.put(name, count);
     }
 
     public void command(final String name) {
@@ -166,7 +170,9 @@ public class Control implements Runnable {
     @Override
     public void run() {
         try {
-            WAV sample = new WAV(getTrack(mCommand));
+            //WAV sample = new WAV(getTrack(mCommand));
+            WAV sample = new WAVGen(mCommand);
+
             AudioTrack audioTrack = createAudioTrack(sample);
 
             if (null == audioTrack) {
@@ -283,11 +289,115 @@ public class Control implements Runnable {
 
     }*/
 
-    final private class WAV { // http://audiocoding.ru/article/2008/05/22/wav-file-structure.html
+    private interface WAV {
+        public int getSampleRate();
+
+        public short getBitsPerSample();
+
+        public short getNumChannels();
+
+        public short getBlockAlign();
+
+        public int getCountFrames();
+
+        public byte[] toByteArray();
+
+        public int size();
+    }
+
+    final private class WAVGen implements WAV {
+
+        private static final int W2 = 76;
+        private static final int W1 = 26;
+        private static final short HIGH = 32767;
+        private static final short LOW = -32767;
+
+
+        private ByteArrayOutputStream buffer;
+        private byte[] pcmdata;
+
+        public WAVGen(final int command) throws IOException {
+
+
+            pcmdata = mSamples.get(command);
+            if (pcmdata == null) {
+                buffer = new ByteArrayOutputStream();
+
+                genMeandr(W2, W1, 4);
+                genMeandr(W1, W1, command);
+
+                pcmdata = buffer.toByteArray();
+                mSamples.put(command, pcmdata);
+
+                ARCLog.d("Cache add %d", command);
+            } else {
+                ARCLog.d("Cache get %d", command);
+            }
+
+        }
+
+        private void write(final short data) {
+            buffer.write((byte) (data & 0xff));
+            buffer.write((byte) ((data >> 8) & 0xff));
+        }
+
+        private void genMeandr(int lowLenght, int highLength, int count) {
+
+            for (int j = 0; j < count; j++) {
+
+                for (int i = 0; i < lowLenght; i++) {
+                    write(LOW);
+                }
+
+                for (int i = 0; i < highLength; i++) {
+                    write(HIGH);
+                }
+            }
+        }
+
+
+        @Override
+        public int getSampleRate() {
+            return 44100;
+        }
+
+        @Override
+        public short getBitsPerSample() {
+            return 16;
+        }
+
+        @Override
+        public short getNumChannels() {
+            return 1;
+        }
+
+        @Override
+        public short getBlockAlign() {
+            return (short) (getNumChannels() * (getBitsPerSample() / 8));
+        }
+
+        @Override
+        public int getCountFrames() {
+            // return (buffer.size() - mCountFrames.get(mCommand)) / getBlockAlign();
+            return (pcmdata.length / getBlockAlign());
+        }
+
+        @Override
+        public int size() {
+            return pcmdata.length;
+        }
+
+        @Override
+        public byte[] toByteArray() {
+            return pcmdata;
+        }
+    }
+
+    final private class WAVFile implements WAV { // http://audiocoding.ru/article/2008/05/22/wav-file-structure.html
         private byte[] pcmdata;
         private int sampleRate = 0;
 
-        public WAV(byte[] buf) {
+        public WAVFile(byte[] buf) {
             pcmdata = buf;
         }
 

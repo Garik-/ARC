@@ -29,11 +29,20 @@ public class ARCApplication extends android.app.Application {
         mControl = new Control(this);
 
         // значения циклов повторения подобраны эксперементально... надо бы вынести настроки в настройки
-        mControl.addCommand("up", R.raw.up, 44);
+       /* mControl.addCommand("up", R.raw.test_8, 44);
         mControl.addCommand("down", R.raw.down, 10);
         mControl.addCommand("left", R.raw.left, 0);
         mControl.addCommand("right", R.raw.right, 48);
-        mControl.addCommand("downleft", R.raw.downleft, 20); // 18
+        mControl.addCommand("downleft", R.raw.downleft, 20); // 18 */
+
+        mControl.addCommand("up", 10);
+        mControl.addCommand("down", 40);
+        mControl.addCommand("left", 58);
+        mControl.addCommand("right", 64);
+        mControl.addCommand("downleft", 52);
+        mControl.addCommand("downright", 46);
+        mControl.addCommand("upright", 34);
+        mControl.addCommand("upleft", 28);
 
         mHttpServer = new HttpServer(8080);
         mHttpServer.setContext(this);
