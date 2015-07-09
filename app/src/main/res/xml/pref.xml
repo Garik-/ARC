@@ -9,8 +9,16 @@
 
             <ListPreference
                 android:title="Разрешение видео"
-
                 android:key="video_resolution" />
+
+
+            <com.vanniktech.vntnumberpickerpreference.VNTNumberPickerPreference xmlns:vntnumberpickerpreference="http://schemas.android.com/apk/res-auto"
+                android:defaultValue="50"
+                android:key="video_quality"
+                android:title="Качество"
+                vntnumberpickerpreference:maxValue="100"
+                vntnumberpickerpreference:minValue="10"
+                vntnumberpickerpreference:setWrapSelectorWheel="true" />
 
 
         </PreferenceScreen>
