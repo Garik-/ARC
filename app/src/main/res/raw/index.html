@@ -488,6 +488,9 @@ border:1px solid #cacfd2;
         </div>
     </div>
 </div>
+<div class="container" style="text-align:center">
+    <div id="status" class="label label-info"></div>
+</div>
 <div class="container">
     <h2>Перемещение автомобиля с помощью клавиатуры</h2>
 
@@ -557,18 +560,33 @@ border:1px solid #cacfd2;
             }
 
 
+            function status(text) {
+                var s = document.getElementById("status");
+                s.innerHTML = text;
+            }
+
+
             var Sockets = (function() { // class Sockets
 
               function Sockets() {
                 this.ws = null;
                 this.connection = false;
+                this.connecting = false;
                 this.port = null;
 
                 var _this = this;
 
                 if(null === this.port) {
                  var req = getXmlHttp();
+
+
                  req.open('GET','/ws', true);
+                 req.setRequestHeader("Accept","text/plain");
+                 req.setRequestHeader("Accept-Encoding","identity");
+                 req.setRequestHeader("Connection", "close");
+
+                 status("Запрос порта сервера команд...");
+
                  req.onreadystatechange = function() {
                       if (req.readyState == 4 && req.status == 200) {
                           _this.port = req.responseText;
@@ -582,25 +600,33 @@ border:1px solid #cacfd2;
               Sockets.prototype.close = function() { 
                 if(this.ws !== null) this.ws.close();
                 this.connection = false;
+                this.connecting = false;
                 this.ws = null;
               }
 
               Sockets.prototype.open = function() {
 
                 var _this = this;
+                this.connecting = true;
 
                 try {
                   this.ws = new WebSocket("ws://"+window.location.hostname+":"+this.port+"/");
 
                  this.ws.onopen = function() {
                         _this.connection = true;
+                        _this.connecting = false;
+                        
+
+                        status("Подключено");
                     }
                   this.ws.onclose = function() {
                         _this.close();
+                        status("Отключено");
                     }
 
                   this.ws.onerror = function(error) {
                      _this.close();
+                        status("Ошибка: " + error);
                   }
                 } catch (e) {
                     this.close();
@@ -620,6 +646,12 @@ border:1px solid #cacfd2;
                 return (this.ws !== null && this.connection === true);
               }
 
+              Sockets.prototype.isConnecting = function() {
+                return (this.ws !== null && this.connecting === true);
+              }
+
+              
+
               return Sockets;
             
           })();
@@ -631,6 +663,7 @@ border:1px solid #cacfd2;
               this.state = {};
               this.lastKeyDown = 0;
               this.keys = keys;
+              this.interval = null;
 
               this.prepare();
 
@@ -699,11 +732,32 @@ border:1px solid #cacfd2;
             }
 
             KeyBind.prototype.sendCommand = function(command) {
-                    console.log('sendCommand '+command);
+                    
 
-                    if(sockets && sockets.isConnected()) {
-                      sockets.send(command);
-                    }
+                    var _this = this;
+                    
+
+                    this.interval = setInterval(function() {
+
+                        if(sockets && sockets.isConnected()) {
+                            sockets.send(command);
+                            clearInterval(_this.interval);
+
+                            console.log("sendCommand: "+command);
+                        } else {
+                            if(!sockets || !sockets.isConnecting()) {
+                                if(!sockets) { 
+                                    sockets = new Sockets(); 
+                                }
+                                else { 
+                                    sockets.open(); 
+                                }
+                            }
+                        }
+                    },200);
+
+                    
+
             }
 
 
@@ -738,6 +792,9 @@ border:1px solid #cacfd2;
             window.addEventListener("unload",function() {
                 sockets.close();
             });
+
+            
+            
 
 
 

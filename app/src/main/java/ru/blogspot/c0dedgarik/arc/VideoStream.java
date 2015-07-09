@@ -10,9 +10,16 @@ import android.view.SurfaceHolder;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class VideoStream {
+
+
     protected Camera mCamera;
+
+
     protected boolean mSurfaceReady = false;
     protected boolean mUnlocked = false;
     protected int mCameraId = 0;
@@ -24,6 +31,8 @@ public class VideoStream {
     //private OutputStream mSocketOutput;
 
     private HttpStream mHttpStream = null;
+
+    private VideoQuality mQuality = VideoQuality.DEFAULT_VIDEO_QUALITY;
 
     //final private ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
@@ -52,6 +61,57 @@ public class VideoStream {
                 break;
             }
         }
+    }
+
+    public void switchCamera() throws RuntimeException, IOException {
+        if (Camera.getNumberOfCameras() == 1)
+            throw new IllegalStateException("Phone only has one camera !");
+
+        boolean previewing = mCamera != null && mCameraOpenedManually;
+        mCameraId = (mCameraId == CameraInfo.CAMERA_FACING_BACK) ? CameraInfo.CAMERA_FACING_FRONT : CameraInfo.CAMERA_FACING_BACK;
+        setCamera(mCameraId);
+        stopPreview();
+        if (previewing) startPreview();
+    }
+
+
+    public void setVideoQuality(VideoQuality videoQuality) {
+        if (!mQuality.equals(videoQuality)) {
+            mQuality = videoQuality;
+        }
+    }
+
+    public VideoQuality getVideoQuality() {
+        return mQuality;
+    }
+
+    public void setVideoSize(int width, int height) {
+        if (mQuality.resX != width || mQuality.resY != height) {
+            mQuality.resX = width;
+            mQuality.resY = height;
+        }
+    }
+
+    private List<Camera.Size> getSupportedVideoSizes() throws RuntimeException, IOException {
+        if (null == mCamera) createCamera();
+
+        if (mCamera.getParameters().getSupportedVideoSizes() != null) {
+            return mCamera.getParameters().getSupportedVideoSizes();
+        } else {
+            // Video sizes may be null, which indicates that all the supported
+            // preview sizes are supported for video recording.
+            return mCamera.getParameters().getSupportedPreviewSizes();
+        }
+    }
+
+    public String[] getSupportedVideoSizesArray() throws RuntimeException, IOException {
+        List<String> sizes = new ArrayList<String>();
+        for (Iterator<Camera.Size> i = getSupportedVideoSizes().iterator(); i.hasNext(); ) {
+            Camera.Size size = i.next();
+            sizes.add(String.format("%dx%d", size.width, size.height));
+        }
+
+        return sizes.toArray(new String[sizes.size()]);
     }
 
     /**
@@ -199,7 +259,7 @@ public class VideoStream {
         private boolean mStreaming = false;
         private byte[] frame;
         private int imageFormat = 0;
-        private final Rect area = new Rect(0, 0, 640, 480);
+        private final Rect area = new Rect(0, 0, mQuality.resX, mQuality.resY);
         private Handler mHandler = new Handler();
         final String BOUNDARY = "Ba4oTvQMY8ew04N8dcnM";
 
@@ -238,7 +298,7 @@ public class VideoStream {
                 }
 
                 buffer.reset();
-                new YuvImage(frame, imageFormat, 640, 480, null).compressToJpeg(area, 50, buffer);
+                new YuvImage(frame, imageFormat, mQuality.resX, mQuality.resY, null).compressToJpeg(area, mQuality.quality, buffer);
                 buffer.flush();
 
                 mSocketOutput.write(("\r\n--" + BOUNDARY + "\r\n" +
@@ -338,6 +398,7 @@ public class VideoStream {
         }
     }
 
+
     protected synchronized void createCamera() throws RuntimeException, IOException {
         if (mSurfaceHolder == null || mSurfaceHolder.getSurface() == null || !mSurfaceReady)
             throw new IllegalStateException("Invalid surface holder !");
@@ -364,7 +425,8 @@ public class VideoStream {
 
             Camera.Parameters parameters = mCamera.getParameters();
 
-            parameters.setPreviewSize(640, 480);
+
+            parameters.setPreviewSize(mQuality.resX, mQuality.resY);
             //parameters.setPreviewFormat(ImageFormat.YUY2);
 
             /*if (mMode == MODE_MEDIACODEC_API) {
@@ -385,7 +447,7 @@ public class VideoStream {
 
             try {
                 mCamera.setParameters(parameters);
-                //mCamera.setDisplayOrientation(mQuality.orientation);
+                mCamera.setDisplayOrientation(mQuality.orientation);
                 mCamera.setPreviewDisplay(mSurfaceHolder);
             } catch (RuntimeException e) {
                 destroyCamera();

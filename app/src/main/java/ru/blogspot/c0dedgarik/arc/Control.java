@@ -26,10 +26,6 @@ public class Control implements Runnable {
     private Handler mHandler = new Handler();
     private HashMap<String, Integer> mCommands = new HashMap<String, Integer>();
 
-    // костыли... разные семплы требуют разного лупа...
-    private HashMap<Integer, Integer> mCountFrames = new HashMap<>();
-
-
     public Control(Context context) {
         mContext = context;
 
@@ -45,6 +41,10 @@ public class Control implements Runnable {
             }
         };
 
+    }
+
+    public void clearChache() {
+        mSamples.evictAll();
     }
 
     //public void addCommand(String name, int resId, int countFrames) {
@@ -161,7 +161,7 @@ public class Control implements Runnable {
                 sample.getSampleRate(), channel, audioFormat, minBufferSize < sample.size() ? sample.size() : minBufferSize,
                 AudioTrack.MODE_STATIC); // ! важно
 
-        audioTrack.write(sample.toByteArray(), 0, sample.size());
+        audioTrack.write(sample.toByteArray(), 0, minBufferSize < sample.size() ? sample.size() : minBufferSize);
         audioTrack.setLoopPoints(0, sample.getCountFrames(), -1);
 
         return audioTrack;
@@ -190,104 +190,6 @@ public class Control implements Runnable {
         }
     }
 
-    /*
-    private class LoadTask extends AsyncTask<Integer, Void, AudioTrack> {
-
-        private int command;
-
-        private byte[] getTrack(final int resId) throws IOException {
-
-            byte[] buf = mSamples.get(resId);
-
-            if (null == buf) {
-
-                Resources r = mContext.getResources();
-                InputStream is = r.openRawResource(resId);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                int i = is.read();
-                while (i != -1) {
-                    baos.write(i);
-                    i = is.read();
-                }
-                is.close();
-
-                buf = baos.toByteArray();
-
-                mSamples.put(resId, buf);
-                ARCLog.d("Cache add %d", resId);
-            } else {
-                ARCLog.d("Cache get %d", resId);
-            }
-
-            return buf;
-        }
-
-        protected AudioTrack doInBackground(Integer... params) {
-
-            command = params[0];
-
-            try {
-
-                WAV sample = new WAV(getTrack(command));
-
-                int audioFormat, channel;
-                switch (sample.getBitsPerSample()) {
-                    case 16:
-                        audioFormat = AudioFormat.ENCODING_PCM_16BIT;
-                        break;
-                    case 8:
-                        audioFormat = AudioFormat.ENCODING_PCM_8BIT;
-                        break;
-                    default:
-                        ARCLog.e("audioFormat, bitsPerSample %d", sample.getBitsPerSample());
-                        return null;  // exception
-                }
-
-                switch (sample.getNumChannels()) {
-                    case 1:
-                        channel = AudioFormat.CHANNEL_OUT_MONO;
-                        break;
-                    case 2:
-                        channel = AudioFormat.CHANNEL_OUT_STEREO;
-                        break;
-                    default:
-                        ARCLog.e("channel, numChannels %d", sample.getNumChannels());
-                        return null;
-                }
-
-                final int minBufferSize = AudioTrack.getMinBufferSize(sample.getSampleRate(), channel, audioFormat);
-
-                AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
-                        sample.getSampleRate(), channel, audioFormat, minBufferSize < sample.size() ? sample.size() : minBufferSize,
-                        AudioTrack.MODE_STATIC); // ! важно
-
-                audioTrack.write(sample.toByteArray(), 0, sample.size());
-                audioTrack.setLoopPoints(0, sample.getCountFrames(), -1);
-
-                return audioTrack;
-
-            } catch (IOException e) {
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(AudioTrack audioTrack) {
-            if (null == audioTrack) {
-                ARCLog.e("null audioTrack");
-                return; // !!!
-            }
-
-            mAudioTrack = audioTrack;
-            mLastCommand = command;
-
-            mAudioTrack.play();
-        }
-
-
-
-    }*/
 
     private interface WAV {
         public int getSampleRate();
@@ -318,10 +220,10 @@ public class Control implements Runnable {
 
         public WAVGen(final int command) throws IOException {
 
-
+            buffer = new ByteArrayOutputStream();
             pcmdata = mSamples.get(command);
+
             if (pcmdata == null) {
-                buffer = new ByteArrayOutputStream();
 
                 genMeandr(W2, W1, 4);
                 genMeandr(W1, W1, command);
@@ -401,6 +303,7 @@ public class Control implements Runnable {
             pcmdata = buf;
         }
 
+        @Override
         public int getSampleRate() {
             if (0 == sampleRate) {
                 byte[] arr = {pcmdata[27], pcmdata[26], pcmdata[25], pcmdata[24]};
@@ -410,34 +313,34 @@ public class Control implements Runnable {
             return sampleRate;
         }
 
+        @Override
         public short getBitsPerSample() {
             return (short) ((pcmdata[35] << 8) + (pcmdata[34] & 0xff));
         }
 
+        @Override
         public short getNumChannels() {
             return (short) ((pcmdata[23] << 8) + (pcmdata[22] & 0xff));
         }
 
+        @Override
         public short getBlockAlign() {
             return (short) ((pcmdata[33] << 8) + (pcmdata[32] & 0xff));
         }
 
+        @Override
         public int getCountFrames() {
-            ARCLog.d("command: %d, countFrames: %d", mCommand, mCountFrames.get(mCommand));
 
-
-            int count = (pcmdata.length - mCountFrames.get(mCommand)) / getBlockAlign();
-
-            //int c = mCountFrames.get(mCommand);
-            //mCountFrames.put(mCommand,c+1);
-
+            int count = pcmdata.length / getBlockAlign();
             return count;  // countFrames = fileSize / blockAlign;
         }
 
+        @Override
         public byte[] toByteArray() {
             return pcmdata;
         }
 
+        @Override
         public int size() {
             return pcmdata.length;
         }

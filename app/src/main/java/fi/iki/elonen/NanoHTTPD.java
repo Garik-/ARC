@@ -1632,7 +1632,7 @@ public abstract class NanoHTTPD {
 
     private final String hostname;
 
-    private final int myPort;
+    private int myPort;
 
     private ServerSocket myServerSocket;
 
@@ -1901,6 +1901,10 @@ public abstract class NanoHTTPD {
      */
     public void start() throws IOException {
         start(NanoHTTPD.SOCKET_READ_TIMEOUT);
+    }
+
+    public void setPort(final int port) {
+        this.myPort = port;
     }
 
     /**

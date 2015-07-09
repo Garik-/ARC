@@ -1,10 +1,17 @@
 package ru.blogspot.c0dedgarik.arc;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.preference.PreferenceManager;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -107,7 +114,8 @@ public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
         return update;
     }
 
-    private Response indexResponse(IHTTPSession session) {
+    private Response checkCache(IHTTPSession session) {
+        Response response = null;
 
         if (lastUpdateTime == null) {
             try {
@@ -119,16 +127,52 @@ public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
         }
 
         if (!isUpdate(session.getHeaders(), lastUpdateTime)) {
-            return newFixedLengthResponse(Response.Status.NOT_MODIFIED, NanoHTTPD.MIME_PLAINTEXT, "Not Modified");
+            response = newFixedLengthResponse(Response.Status.NOT_MODIFIED, NanoHTTPD.MIME_PLAINTEXT, "Not Modified");
         }
 
-        Resources r = mContext.getResources();
-        InputStream is = r.openRawResource(R.raw.index);
-        Response response = newChunkedResponse(Response.Status.OK, NanoHTTPD.MIME_HTML, is);
+        return response;
+    }
 
+    private void addCache(Response response) {
         if (lastUpdateTime != null) {
             response.addHeader("Cache-control", "private");
             response.addHeader("Last-Modified", lastUpdateTime);
+        }
+    }
+
+    private Response indexResponse(IHTTPSession session) {
+
+        Response response = checkCache(session);
+        if (null == response) {
+            Resources r = mContext.getResources();
+            InputStream is = r.openRawResource(R.raw.index);
+            response = newChunkedResponse(Response.Status.OK, NanoHTTPD.MIME_HTML, is);
+            addCache(response);
+        }
+
+        return response;
+    }
+
+    private Response faviconResponse(IHTTPSession session) {
+        Response response = checkCache(session);
+        if (null == response) {
+            try {
+                Drawable icon = mContext.getPackageManager().getApplicationIcon(mContext.getPackageName());
+                BitmapDrawable bitDw = ((BitmapDrawable) icon);
+                Bitmap bitmap = bitDw.getBitmap();
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                byte[] imageInByte = stream.toByteArray();
+                ByteArrayInputStream bis = new ByteArrayInputStream(imageInByte);
+
+                response = newChunkedResponse(Response.Status.OK, "image/png", bis);
+                addCache(response);
+
+            } catch (PackageManager.NameNotFoundException e) {
+                ARCLog.e(e.getMessage());
+
+                response = newFixedLengthResponse(Response.Status.NOT_FOUND, NanoHTTPD.MIME_PLAINTEXT, "Not Found");
+            }
         }
 
         return response;
@@ -150,7 +194,15 @@ public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
     @Override
     public void start() throws IOException {
 
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(mContext);
+
+        setPort(Integer.parseInt(sp.getString("port", "8080")));
+        mWebSocketServer.setPort(Integer.parseInt(sp.getString("websocket_port", "9090")));
+
         if (null != mVideoStream) {
+
+
+            mVideoStream.setVideoQuality(new VideoQuality(sp.getString("video_resolution", "640x480"), 50, 90));
             //mVideoStream.startPreview();
             mVideoStream.start();
         }
@@ -187,12 +239,17 @@ public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
         }
 
         if (uri.equals("/ws")) {
-            return newFixedLengthResponse(Response.Status.OK, NanoHTTPD.MIME_PLAINTEXT, "9090"); // port ws
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(mContext);
+            return newFixedLengthResponse(Response.Status.OK, NanoHTTPD.MIME_PLAINTEXT, sp.getString("websocket_port", "9090")); // port ws
         }
 
 
         if (uri.equals("/stream")) {
             return videoStream(session);
+        }
+
+        if (uri.equals("/favicon.ico")) {
+            return faviconResponse(session);
         }
 
         /*if (Method.POST.equals(method)) {

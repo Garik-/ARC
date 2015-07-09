@@ -1,23 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="НАСТРОЙКИ ARC">
-        <PreferenceScreen
-            android:key="sample_settings"
-            android:title="Управляющие команды"
-            android:summary="Частота сигнала">
 
-
-            <ru.blogspot.c0dedgarik.arc.ui.SamplePreference
-                android:key="sample_up"
-                android:title="Вверх"
-                android:summary="30" />
-
-
-        </PreferenceScreen>
         <PreferenceScreen
             android:key="video_settings"
             android:title="Настройки видео"
             android:summary="Разрешение, фокус, другие настройки видео">
+
+            <ListPreference
+                android:title="Разрешение видео"
+
+                android:key="video_resolution" />
 
 
         </PreferenceScreen>
@@ -34,13 +27,16 @@
             android:title="Вещание в локальной сети"
             android:summary="Порт 8080, логин/пароль: не установлены">
 
+
             <EditTextPreference
                 android:key="port"
-                android:summary="8080"
+                android:numeric="integer"
+                android:maxLength="4"
                 android:title="Порт веб-сервера"></EditTextPreference>
             <EditTextPreference
                 android:key="websocket_port"
-                android:summary="9090"
+                android:numeric="integer"
+                android:maxLength="4"
                 android:title="Порт сервера команд"></EditTextPreference>
         </PreferenceScreen>
     </PreferenceCategory>

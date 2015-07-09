@@ -1,6 +1,8 @@
 package ru.blogspot.c0dedgarik.arc;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,7 @@ public class ARCApplication extends android.app.Application {
     private VideoStream mVideoStream;
     private CustomToast mToast;
     private Control mControl;
+    private SharedPreferences mPreferences;
 
 
     public interface DI {
@@ -23,9 +26,10 @@ public class ARCApplication extends android.app.Application {
     @Override
     public void onCreate() {
 
+        mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
 
         mVideoStream = new VideoStream();
-
         mControl = new Control(this);
 
         // значения циклов повторения подобраны эксперементально... надо бы вынести настроки в настройки
@@ -92,5 +96,9 @@ public class ARCApplication extends android.app.Application {
 
     public VideoStream getVideoStream() {
         return mVideoStream;
+    }
+
+    public SharedPreferences getPreferences() {
+        return mPreferences;
     }
 }
