@@ -6,6 +6,7 @@ import android.content.res.Resources;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.LruCache;
@@ -166,6 +167,13 @@ public class Control implements Runnable {
         audioTrack.write(sample.toByteArray(), 0, sample.size());
         audioTrack.setLoopPoints(0, sample.getCountFrames(), -1);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            audioTrack.setVolume(audioTrack.getMaxVolume());
+        } else {
+            audioTrack.setStereoVolume(audioTrack.getMaxVolume(), audioTrack.getMaxVolume());
+        }
+
+
         return audioTrack;
     }
 
@@ -177,6 +185,7 @@ public class Control implements Runnable {
             WAV sample = new WAVGen(
                     Integer.parseInt(sp.getString("audio_w1", "26")),
                     Integer.parseInt(sp.getString("audio_w2", "76")),
+                    sp.getBoolean("audio_inverse", false),
                     mCommand
             );
 
@@ -222,15 +231,21 @@ public class Control implements Runnable {
     final private class WAVGen implements WAV {
 
 
-        private static final short HIGH = 32767;
-        private static final short LOW = -32767;
+        private short HIGH = 32767;
+        private short LOW = -32767;
 
 
         private ByteArrayOutputStream buffer;
         private byte[] pcmdata;
 
 
+
         public WAVGen(final int w1, final int w2, final int command) throws IOException {
+            this(w1, w2, false, command);
+        }
+
+
+        public WAVGen(final int w1, final int w2, final boolean inverse, final int command) throws IOException {
 
 
             pcmdata = mSamples.get(command);
@@ -238,6 +253,11 @@ public class Control implements Runnable {
             if (pcmdata == null) {
 
                 buffer = new ByteArrayOutputStream();
+
+                if (inverse) {
+                    HIGH = -32767;
+                    LOW = 32767;
+                }
 
                 genMeandr(w2, w1, 4);
                 genMeandr(w1, w1, command);

@@ -23,6 +23,12 @@
                 android:summary="Стартовый бит"
                 android:title="W2"></EditTextPreference>
 
+            <CheckBoxPreference
+                android:title="Инверсия"
+                android:defaultValue="false"
+                android:summary="Инвертировать логические уровни"
+                android:key="audio_inverse" />
+
         </PreferenceScreen>
 
         <PreferenceScreen
@@ -46,7 +52,7 @@
             <ListPreference
                 android:title="Ориентация видео"
                 android:key="video_orientation"
-                android:entries="@array/orientationArray"
+                android:entries="@array/orientationEntries"
                 android:entryValues="@array/orientationValues"
                 android:defaultValue="Портретная" />
 

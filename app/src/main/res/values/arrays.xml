@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="orientationArray">
+    <string-array name="orientationEntries">
         <item>Ландшафтная</item>
         <item>Портретная</item>
         <item>Перевёрнутая</item>
