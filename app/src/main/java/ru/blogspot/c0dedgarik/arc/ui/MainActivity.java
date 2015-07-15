@@ -143,7 +143,11 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         switch (item.getItemId()) {
             case R.id.action_settings:
                 Intent intent = new Intent(this, PrefActivity.class);
+
+
                 startActivity(intent);
+
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

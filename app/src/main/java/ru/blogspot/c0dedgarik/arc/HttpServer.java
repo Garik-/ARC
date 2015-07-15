@@ -202,7 +202,14 @@ public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
         if (null != mVideoStream) {
 
 
-            mVideoStream.setVideoQuality(new VideoQuality(sp.getString("video_resolution", "640x480"), 50, 90));
+            mVideoStream.setVideoQuality(
+                    new VideoQuality(
+                            sp.getString("video_resolution", "640x480"),
+                            sp.getInt("video_quality", 50), 90
+                            //Integer.parseInt(sp.getString("video_orientation","90")
+
+                    )
+            );
             //mVideoStream.startPreview();
             mVideoStream.start();
         }

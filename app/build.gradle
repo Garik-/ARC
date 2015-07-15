@@ -8,8 +8,8 @@ android {
         applicationId "ru.blogspot.c0dedgarik.arc"
         minSdkVersion 14 // LruCache min 12
         targetSdkVersion 21
-        versionCode 1
-        versionName "1.0"
+        versionCode 0
+        versionName "0.3"
     }
     buildTypes {
         release {

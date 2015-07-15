@@ -1,11 +1,13 @@
 package ru.blogspot.c0dedgarik.arc;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.util.LruCache;
 
 import java.io.ByteArrayOutputStream;
@@ -158,10 +160,10 @@ public class Control implements Runnable {
         final int minBufferSize = AudioTrack.getMinBufferSize(sample.getSampleRate(), channel, audioFormat);
 
         AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
-                sample.getSampleRate(), channel, audioFormat, minBufferSize < sample.size() ? sample.size() : minBufferSize,
+                sample.getSampleRate(), channel, audioFormat, minBufferSize > sample.size() ? minBufferSize : sample.size(),
                 AudioTrack.MODE_STATIC); // ! важно
 
-        audioTrack.write(sample.toByteArray(), 0, minBufferSize < sample.size() ? sample.size() : minBufferSize);
+        audioTrack.write(sample.toByteArray(), 0, sample.size());
         audioTrack.setLoopPoints(0, sample.getCountFrames(), -1);
 
         return audioTrack;
@@ -171,7 +173,17 @@ public class Control implements Runnable {
     public void run() {
         try {
             //WAV sample = new WAV(getTrack(mCommand));
-            WAV sample = new WAVGen(mCommand);
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(mContext);
+            WAV sample = new WAVGen(
+                    Integer.parseInt(sp.getString("audio_w1", "26")),
+                    Integer.parseInt(sp.getString("audio_w2", "76")),
+                    mCommand
+            );
+
+            ARCLog.d("command: %d\nsize: %d\n count frames: %d\n",
+                    mCommand,
+                    sample.size(),
+                    sample.getCountFrames());
 
             AudioTrack audioTrack = createAudioTrack(sample);
 
@@ -209,8 +221,7 @@ public class Control implements Runnable {
 
     final private class WAVGen implements WAV {
 
-        private static final int W2 = 76;
-        private static final int W1 = 26;
+
         private static final short HIGH = 32767;
         private static final short LOW = -32767;
 
@@ -218,15 +229,18 @@ public class Control implements Runnable {
         private ByteArrayOutputStream buffer;
         private byte[] pcmdata;
 
-        public WAVGen(final int command) throws IOException {
 
-            buffer = new ByteArrayOutputStream();
+        public WAVGen(final int w1, final int w2, final int command) throws IOException {
+
+
             pcmdata = mSamples.get(command);
 
             if (pcmdata == null) {
 
-                genMeandr(W2, W1, 4);
-                genMeandr(W1, W1, command);
+                buffer = new ByteArrayOutputStream();
+
+                genMeandr(w2, w1, 4);
+                genMeandr(w1, w1, command);
 
                 pcmdata = buffer.toByteArray();
                 mSamples.put(command, pcmdata);
@@ -280,7 +294,7 @@ public class Control implements Runnable {
 
         @Override
         public int getCountFrames() {
-            // return (buffer.size() - mCountFrames.get(mCommand)) / getBlockAlign();
+
             return (pcmdata.length / getBlockAlign());
         }
 

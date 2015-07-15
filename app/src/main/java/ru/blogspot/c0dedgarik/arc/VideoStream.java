@@ -31,8 +31,9 @@ public class VideoStream {
     //private OutputStream mSocketOutput;
 
     private HttpStream mHttpStream = null;
-
     private VideoQuality mQuality = VideoQuality.DEFAULT_VIDEO_QUALITY;
+
+    private String[] supportedVideoSizes = null;
 
     //final private ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
@@ -93,25 +94,38 @@ public class VideoStream {
     }
 
     private List<Camera.Size> getSupportedVideoSizes() throws RuntimeException, IOException {
-        if (null == mCamera) createCamera();
+        List<Camera.Size> sizes = null;
+
+        if (null == mCamera) {
+            mCamera = Camera.open(mCameraId);
+        }
 
         if (mCamera.getParameters().getSupportedVideoSizes() != null) {
-            return mCamera.getParameters().getSupportedVideoSizes();
+            sizes = mCamera.getParameters().getSupportedVideoSizes();
         } else {
             // Video sizes may be null, which indicates that all the supported
             // preview sizes are supported for video recording.
-            return mCamera.getParameters().getSupportedPreviewSizes();
+            sizes = mCamera.getParameters().getSupportedPreviewSizes();
         }
+
+        destroyCamera();
+
+        return sizes;
     }
 
     public String[] getSupportedVideoSizesArray() throws RuntimeException, IOException {
-        List<String> sizes = new ArrayList<String>();
-        for (Iterator<Camera.Size> i = getSupportedVideoSizes().iterator(); i.hasNext(); ) {
-            Camera.Size size = i.next();
-            sizes.add(String.format("%dx%d", size.width, size.height));
+
+        if (null == supportedVideoSizes) {
+            List<String> sizes = new ArrayList<String>();
+            for (Iterator<Camera.Size> i = getSupportedVideoSizes().iterator(); i.hasNext(); ) {
+                Camera.Size size = i.next();
+                sizes.add(String.format("%dx%d", size.width, size.height));
+            }
+
+            supportedVideoSizes = sizes.toArray(new String[sizes.size()]);
         }
 
-        return sizes.toArray(new String[sizes.size()]);
+        return supportedVideoSizes;
     }
 
     /**

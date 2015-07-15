@@ -735,6 +735,9 @@ border:1px solid #cacfd2;
                     
 
                     var _this = this;
+
+                    if(this.interval) 
+                        clearInterval(this.interval);
                     
 
                     this.interval = setInterval(function() {
@@ -742,6 +745,7 @@ border:1px solid #cacfd2;
                         if(sockets && sockets.isConnected()) {
                             sockets.send(command);
                             clearInterval(_this.interval);
+                            _this.interval = null;
 
                             console.log("sendCommand: "+command);
                         } else {

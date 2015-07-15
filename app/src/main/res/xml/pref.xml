@@ -3,6 +3,29 @@
     <PreferenceCategory android:title="НАСТРОЙКИ ARC">
 
         <PreferenceScreen
+            android:key="audio_settings"
+            android:title="Генерация команд"
+            android:summary="Длительности импульсов указаны в семплах">
+
+            <EditTextPreference
+                android:key="audio_w1"
+                android:numeric="integer"
+                android:maxLength="4"
+                android:defaultValue="26"
+                android:summary="Функциональный бит"
+                android:title="W1"></EditTextPreference>
+
+            <EditTextPreference
+                android:key="audio_w2"
+                android:numeric="integer"
+                android:maxLength="4"
+                android:defaultValue="76"
+                android:summary="Стартовый бит"
+                android:title="W2"></EditTextPreference>
+
+        </PreferenceScreen>
+
+        <PreferenceScreen
             android:key="video_settings"
             android:title="Настройки видео"
             android:summary="Разрешение, фокус, другие настройки видео">
@@ -20,13 +43,32 @@
                 vntnumberpickerpreference:minValue="10"
                 vntnumberpickerpreference:setWrapSelectorWheel="true" />
 
+            <ListPreference
+                android:title="Ориентация видео"
+                android:key="video_orientation"
+                android:entries="@array/orientationArray"
+                android:entryValues="@array/orientationValues"
+                android:defaultValue="Портретная" />
+
+            <CheckBoxPreference
+                android:title="Использовать переденюю камеру"
+                android:defaultValue="false"
+                android:summary="Используйте более низкие разрешения"
+                android:key="video_front" />
+
 
         </PreferenceScreen>
 
         <PreferenceScreen
             android:key="power_settings"
             android:title="Управление питанием"
-            android:summary="Выключать экран или камеру, когда не используется"></PreferenceScreen>
+            android:summary="Выключать экран или камеру, когда не используется">
+            <CheckBoxPreference
+                android:title="Не выключать экран"
+                android:defaultValue="false"
+                android:summary="Во время вещания предотвращать автоматическое выключение экрана"
+                android:key="power_wake" />
+        </PreferenceScreen>
 
     </PreferenceCategory>
     <PreferenceCategory android:title="НАСТРОЙКИ СОЕДИНЕНИЯ">
