@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="#888"
-            android:text="@string/network_error"
+            android:text="@string/error_network"
             android:id="@+id/tvStatus"
             android:layout_gravity="center_horizontal" />
 

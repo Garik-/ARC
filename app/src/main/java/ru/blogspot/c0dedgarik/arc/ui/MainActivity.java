@@ -2,6 +2,7 @@ package ru.blogspot.c0dedgarik.arc.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
@@ -27,6 +28,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     private ARCApplication mApplication;
     private HttpServer mHttpServer;
     private SharedPreferences mSharedPreferences;
+    private Resources mResources;
 
     private SurfaceView mSurfaceView;
     private ToggleButton mBtnPower;
@@ -44,7 +46,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                         mSurfaceView.setVisibility(View.VISIBLE);
 
                         mHttpServer.start();
-                        mApplication.toast("Веб-сервер запущен", Toast.LENGTH_LONG);
+                        mApplication.toast(mResources.getString(R.string.status_on), Toast.LENGTH_LONG);
 
 
                     } catch (IOException e) {
@@ -56,7 +58,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                     mHttpServer.stop();
                     mSurfaceView.setVisibility(View.GONE);
 
-                    mApplication.toast("Веб-сервер остановлен", Toast.LENGTH_LONG);
+                    mApplication.toast(mResources.getString(R.string.status_off), Toast.LENGTH_LONG);
                 }
 
                 //mBtnPower.setChecked(mHttpServer.wasStarted());
@@ -74,6 +76,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         mSurfaceView = (SurfaceView) findViewById(R.id.SurfaceView01);
 
         mApplication = (ARCApplication) getApplication();
+        mResources = mApplication.getResources();
         mHttpServer = mApplication.getHttpServer();
 
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(mApplication);
@@ -134,8 +137,6 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 intent.putExtra(PreferenceActivity.EXTRA_NO_HEADERS, true);
 
                 startActivity(intent);
-
-
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

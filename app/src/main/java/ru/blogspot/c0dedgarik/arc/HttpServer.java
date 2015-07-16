@@ -29,9 +29,14 @@ import java.util.regex.Pattern;
 import fi.iki.elonen.NanoHTTPD;
 
 
-public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
+public class HttpServer extends NanoHTTPD {
+
+    private static final int WEBSOCKET_TIMEOUT = 30000; // timeout = 30 sec !!
+    private static final int FAVICON_QUALITY = 100;
 
     private Context mContext;
+    private Resources mResources;
+    private SharedPreferences mSharedPreferences;
 
     private String lastUpdateTime = null;
     private VideoStream mVideoStream;
@@ -55,20 +60,25 @@ public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
     }
 
 
-    public HttpServer(final int port) {
+    public HttpServer(final Context context, final int port) {
         super(port);
 
         //commandPattern = Pattern.compile("^\\/command\\/([a-z]*)$");
         ipPattern = Pattern.compile("(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])", Pattern.CASE_INSENSITIVE);
 
-        mWebSocketServer = new WebSocketServer(9090);
+        setContext(context);
     }
 
     public void setContext(Context context) {
-        mContext = context;
-        mVideoStream = ((ARCApplication) mContext.getApplicationContext()).getVideoStream();
 
-        mWebSocketServer.setContext(context);
+        mResources = context.getResources();
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+
+        mWebSocketServer = new WebSocketServer(context, mResources.getInteger(R.integer.socket_port));
+
+        mVideoStream = ((ARCApplication) context.getApplicationContext()).getVideoStream();
+
+        mContext = context;
     }
 
 
@@ -144,8 +154,8 @@ public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
 
         Response response = checkCache(session);
         if (null == response) {
-            Resources r = mContext.getResources();
-            InputStream is = r.openRawResource(R.raw.index);
+
+            InputStream is = mResources.openRawResource(R.raw.index);
             response = newChunkedResponse(Response.Status.OK, NanoHTTPD.MIME_HTML, is);
             addCache(response);
         }
@@ -161,11 +171,12 @@ public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
                 BitmapDrawable bitDw = ((BitmapDrawable) icon);
                 Bitmap bitmap = bitDw.getBitmap();
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                bitmap.compress(Bitmap.CompressFormat.PNG, FAVICON_QUALITY, stream);
                 byte[] imageInByte = stream.toByteArray();
                 ByteArrayInputStream bis = new ByteArrayInputStream(imageInByte);
 
                 response = newChunkedResponse(Response.Status.OK, "image/png", bis);
+                response.addHeader("Connection", "close");
                 addCache(response);
 
             } catch (PackageManager.NameNotFoundException e) {
@@ -176,6 +187,19 @@ public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
         }
 
         return response;
+    }
+
+    private int getPrefString(final String name, int def) {
+        int defaultValue;
+
+        try {
+            defaultValue = mResources.getInteger(def);
+        } catch (Resources.NotFoundException e) {
+            defaultValue = def;
+        }
+
+        String value = mSharedPreferences.getString(name, String.valueOf(defaultValue));
+        return Integer.parseInt(value);
     }
 
     /*private Response executeCommand(String command) {
@@ -194,18 +218,17 @@ public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
     @Override
     public void start() throws IOException {
 
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(mContext);
 
-        setPort(Integer.parseInt(sp.getString("port", "8080")));
-        mWebSocketServer.setPort(Integer.parseInt(sp.getString("websocket_port", "9090")));
+        setPort(getPrefString("port", R.integer.port));
+        mWebSocketServer.setPort(getPrefString("websocket_port", R.integer.socket_port));
 
         if (null != mVideoStream) {
 
 
             mVideoStream.setVideoQuality(
                     new VideoQuality(
-                            sp.getString("video_resolution", "640x480"),
-                            sp.getInt("video_quality", 50),
+                            mSharedPreferences.getString("video_resolution", "640x480"),
+                            mSharedPreferences.getInt("video_quality", mResources.getInteger(R.integer.quality)),
                             90//sp.getInt("")
                             //Integer.parseInt(sp.getString("video_orientation","90")
 
@@ -215,7 +238,7 @@ public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
             mVideoStream.start();
         }
 
-        mWebSocketServer.start(30000); // timeout = 30 sec !!
+        mWebSocketServer.start(WEBSOCKET_TIMEOUT);
 
         super.start();
     }
@@ -248,7 +271,14 @@ public class HttpServer extends NanoHTTPD implements ARCApplication.DI {
 
         if (uri.equals("/ws")) {
             SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(mContext);
-            return newFixedLengthResponse(Response.Status.OK, NanoHTTPD.MIME_PLAINTEXT, sp.getString("websocket_port", "9090")); // port ws
+            Response r = newFixedLengthResponse(
+                    Response.Status.OK,
+                    NanoHTTPD.MIME_PLAINTEXT,
+                    sp.getString("websocket_port", String.valueOf(mResources.getInteger(R.integer.socket_port)))
+            );
+
+            r.addHeader("Connection", "close"); // !!! убираем pending
+            return r;
         }
 
 

@@ -4,14 +4,14 @@
 
         <PreferenceScreen
             android:key="audio_settings"
-            android:title="Генерация команд"
-            android:summary="Длительности импульсов указаны в семплах">
+            android:title="@string/audio_settings"
+            android:summary="@string/audio_settings_summary">
 
             <EditTextPreference
                 android:key="audio_w1"
                 android:numeric="integer"
                 android:maxLength="4"
-                android:defaultValue="26"
+                android:defaultValue="@integer/w1"
                 android:summary="Функциональный бит"
                 android:title="W1"></EditTextPreference>
 
@@ -19,7 +19,7 @@
                 android:key="audio_w2"
                 android:numeric="integer"
                 android:maxLength="4"
-                android:defaultValue="76"
+                android:defaultValue="@integer/w2"
                 android:summary="Стартовый бит"
                 android:title="W2"></EditTextPreference>
 
@@ -42,7 +42,7 @@
 
 
             <com.vanniktech.vntnumberpickerpreference.VNTNumberPickerPreference xmlns:vntnumberpickerpreference="http://schemas.android.com/apk/res-auto"
-                android:defaultValue="50"
+                android:defaultValue="@integer/quality"
                 android:key="video_quality"
                 android:title="Качество"
                 vntnumberpickerpreference:maxValue="100"
@@ -88,11 +88,13 @@
                 android:key="port"
                 android:numeric="integer"
                 android:maxLength="4"
+                android:defaultValue="@integer/port"
                 android:title="Порт веб-сервера"></EditTextPreference>
             <EditTextPreference
                 android:key="websocket_port"
                 android:numeric="integer"
                 android:maxLength="4"
+                android:defaultValue="@integer/socket_port"
                 android:title="Порт сервера команд"></EditTextPreference>
         </PreferenceScreen>
     </PreferenceCategory>

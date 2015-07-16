@@ -7,19 +7,20 @@ import java.io.IOException;
 
 import fi.iki.elonen.NanoWebSocketServer;
 
-public class WebSocketServer extends NanoWebSocketServer implements ARCApplication.DI {
+public class WebSocketServer extends NanoWebSocketServer {
 
     private Context mContext;
     private Control mControl;
 
-    @Override
+
     public void setContext(Context context) {
         mContext = context;
         mControl = ((ARCApplication) context.getApplicationContext()).getControl();
     }
 
-    public WebSocketServer(int port) {
+    public WebSocketServer(final Context context, final int port) {
         super(port);
+        setContext(context);
     }
 
     public void createControl(Context context) {

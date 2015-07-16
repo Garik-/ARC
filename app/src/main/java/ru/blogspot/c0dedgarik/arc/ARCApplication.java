@@ -18,11 +18,6 @@ public class ARCApplication extends android.app.Application {
     private Control mControl;
     private SharedPreferences mPreferences;
 
-
-    public interface DI {
-        public void setContext(Context context);
-    }
-
     @Override
     public void onCreate() {
 
@@ -48,8 +43,7 @@ public class ARCApplication extends android.app.Application {
         mControl.addCommand("upright", 34);
         mControl.addCommand("upleft", 28);
 
-        mHttpServer = new HttpServer(8080);
-        mHttpServer.setContext(this);
+        mHttpServer = new HttpServer(this, this.getResources().getInteger(R.integer.port));
 
         mToast = new CustomToast();
 
