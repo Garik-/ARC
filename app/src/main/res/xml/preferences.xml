@@ -87,13 +87,13 @@
             <EditTextPreference
                 android:key="port"
                 android:numeric="integer"
-                android:maxLength="4"
+                
                 android:defaultValue="@integer/port"
                 android:title="Порт веб-сервера"></EditTextPreference>
             <EditTextPreference
                 android:key="websocket_port"
                 android:numeric="integer"
-                android:maxLength="4"
+                
                 android:defaultValue="@integer/socket_port"
                 android:title="Порт сервера команд"></EditTextPreference>
         </PreferenceScreen>
